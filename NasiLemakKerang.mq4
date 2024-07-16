@@ -1,12 +1,10 @@
 //+------------------------------------------------------------------+
-//|                                                NasiLemakKerangEA |
+//|                                                 NasiLemakKerangEA|
 //|                                Copyright 2024, IzzNazrin Sdn Bhd |
 //+------------------------------------------------------------------+
-
-string Trademark = "NasiLemakKerangEA";
 int MA1_Period = 10;
 int MA2_Period = 50;
-int MaxOpenOrders = 4;
+int MaxOpenOrders = 2;
 double SL_Points = 100;
 double TP_Points = 300;
 double BreakEvenTrigger = 150;
@@ -15,7 +13,6 @@ int TradeDelayMinutes = 10;
 double Lots = 0.01;
 
 int ticket;
-int openOrders;
 bool canTrade = true;
 bool firstTrade = true;
 string cross = "";
@@ -90,11 +87,10 @@ void AdjustStopLossToBreakEven()
         }
      }
   }
-
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void DelayTrade()
+void SetDelay()
   {
    if(!canTrade && (TimeCurrent() - lastTradeTime) >= PeriodSeconds(PERIOD_M1) * TradeDelayMinutes)
      {
@@ -109,40 +105,48 @@ void OnTick()
   {
    double MA1 = iMA(Symbol(), PERIOD_M1, MA1_Period, 0, MODE_SMA, PRICE_CLOSE, 0);
    double MA2 = iMA(Symbol(), PERIOD_M1, MA2_Period, 0, MODE_SMA, PRICE_CLOSE, 0);
+   int openOrders = CountOpenOrders();
 
    if(MA1 > MA2)
      {
-      openOrders = CountOpenOrders();
-      if((firstTrade || cross == "buy") && canTrade && openOrders < MaxOpenOrders)
+      if(firstTrade)
         {
-         ticket = OrderSend(Symbol(), OP_BUY, Lots, Ask, 3, Ask - SL_Points * Point, Ask + TP_Points * Point, Trademark, 0, 0, Blue);
+         cross = "sell";
+         firstTrade = false;
+        }
+      if(cross == "buy" && canTrade && openOrders < MaxOpenOrders)
+        {
+         ticket = OrderSend(Symbol(), OP_BUY, Lots, Ask, 3, Ask - SL_Points * Point, Ask + TP_Points * Point, "Buy order", 0, 0, Blue);
          if(ticket > 0)
            {
             lastTradeTime = TimeCurrent();
             canTrade = false;
             cross = "sell";
-            firstTrade = false;
+            
            }
         }
      }
    else
       if(MA1 < MA2)
         {
-         openOrders = CountOpenOrders();
-         if((firstTrade || cross == "sell") && canTrade && openOrders < MaxOpenOrders)
+         if(firstTrade)
            {
-            ticket = OrderSend(Symbol(), OP_SELL, Lots, Bid, 3, Bid + SL_Points * Point, Bid - TP_Points * Point, Trademark, 0, 0, Red);
+            cross = "buy";
+            firstTrade = false;
+           }
+         if(cross == "sell" && canTrade && openOrders < MaxOpenOrders)
+           {
+            ticket = OrderSend(Symbol(), OP_SELL, Lots, Bid, 3, Bid + SL_Points * Point, Bid - TP_Points * Point, "Sell order", 0, 0, Red);
             if(ticket > 0)
               {
                lastTradeTime = TimeCurrent();
                canTrade = false;
                cross = "buy";
-               firstTrade = false;
               }
            }
         }
 
-   DelayTrade();
+   SetDelay();
    AdjustStopLossToBreakEven();
   }
 //+------------------------------------------------------------------+
