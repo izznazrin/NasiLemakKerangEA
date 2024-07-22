@@ -2,14 +2,14 @@
 //|                                                 NasiLemakKerangEA|
 //|                                Copyright 2024, IzzNazrin Sdn Bhd |
 //+------------------------------------------------------------------+
-int MA1_Period = 10;
+int MA1_Period = 20;
 int MA2_Period = 50;
-int MaxOpenOrders = 2;
-double SL_Points = 100;
-double TP_Points = 300;
-double BreakEvenTrigger = 150;
+int MaxOpenOrders = 6;
+double SL_Points = 120;
+double TP_Points = 320;
+double BreakEvenTrigger = 100;
 double BreakEvenOffset = 20;
-int TradeDelayMinutes = 10;
+int TradeDelayMinutes = 15;
 double Lots = 0.01;
 
 int ticket;
@@ -103,8 +103,8 @@ void SetDelay()
 //+------------------------------------------------------------------+
 void OnTick()
   {
-   double MA1 = iMA(Symbol(), PERIOD_M1, MA1_Period, 0, MODE_SMA, PRICE_CLOSE, 0);
-   double MA2 = iMA(Symbol(), PERIOD_M1, MA2_Period, 0, MODE_SMA, PRICE_CLOSE, 0);
+   double MA1 = iMA(Symbol(), PERIOD_M1, MA1_Period, 0, MODE_EMA, PRICE_CLOSE, 0);
+   double MA2 = iMA(Symbol(), PERIOD_M1, MA2_Period, 0, MODE_EMA, PRICE_CLOSE, 0);
    int openOrders = CountOpenOrders();
 
    if(MA1 > MA2)
@@ -122,7 +122,7 @@ void OnTick()
             lastTradeTime = TimeCurrent();
             canTrade = false;
             cross = "sell";
-            
+
            }
         }
      }
